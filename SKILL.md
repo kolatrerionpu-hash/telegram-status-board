@@ -194,13 +194,20 @@ Use local tools or scripts only to normalize output when needed.
 
 ## Bundled Script
 
-Use `scripts/render_status_board.py` to render a Telegram-friendly board from a JSON input payload.
+Use `scripts/collect_openclaw_status.py` to gather a compact local OpenClaw snapshot.
+Then use `scripts/render_status_board.py` to render a Telegram-friendly board from the JSON payload.
 
-Input contract:
+Input contract for the renderer:
 - a JSON object with key metrics already resolved
 - the script formats the board consistently
 
-Use the script when you need consistent rendering across repeated status updates.
+Recommended local pipeline:
+
+```bash
+python3 scripts/collect_openclaw_status.py | python3 scripts/render_status_board.py
+```
+
+Use the scripts when you need consistent rendering across repeated status updates.
 
 ## Output Policy
 
