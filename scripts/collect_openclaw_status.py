@@ -75,7 +75,38 @@ def detect_crons() -> str:
     total = len(jobs)
     if total == 0:
         return '💤 none'
-    return f'✅ {total} configured'
+    enabled = sum(1 for j in jobs if j.get('enabled', True))
+    return f'✅ {enabled}/{total} enabled'
+
+
+def detect_today_cost() -> Optional[float]:
+    dash = run_json(['/bin/cat', '/Users/lzgmini/.openclaw/dashboard/data.json'])
+    if not isinstance(dash, dict):
+        return None
+    vals = dash.get('costBreakdownToday') or []
+    total = 0.0
+    found = False
+    for item in vals:
+        try:
+            total += float(item.get('cost', 0) or 0)
+            found = True
+        except Exception:
+            pass
+    return total if found else None
+
+
+def detect_channel_health() -> Optional[str]:
+    dash = run_json(['/bin/cat', '/Users/lzgmini/.openclaw/dashboard/data.json'])
+    if not isinstance(dash, dict):
+        return None
+    cs = (((dash.get('agentConfig') or {}).get('channelStatus')) or {}).get('telegram') or {}
+    if not cs:
+        return None
+    if cs.get('configured') and cs.get('connected'):
+        return '✅ Telegram connected'
+    if cs.get('configured'):
+        return '⚠️ Telegram configured'
+    return '❌ Telegram missing'
 
 
 def detect_ollama() -> str:
@@ -102,22 +133,28 @@ def detect_model_lane(status: Dict[str, Any], name: str) -> str:
 
 def main() -> None:
     status = run_json(['openclaw', 'status', '--json']) or {}
+    telegram_health = detect_channel_health()
+    focus = [
+        '查看当前主会话状态',
+        '跟踪近期子代理痕迹',
+        '用于 Telegram 快速总览'
+    ]
+    if telegram_health:
+        focus.insert(0, telegram_health)
+
     payload: Dict[str, Any] = {
         'title': '🛡️ Vanguard 状态面板',
         'gateway': detect_gateway(status),
         'main': detect_main(status),
         'subagents': detect_subagents(status),
         'crons': detect_crons(),
+        'cost_today': detect_today_cost(),
         'context_percent': detect_context(status),
         'lcm': detect_lcm(),
         'ollama': detect_ollama(),
         'gemini': detect_model_lane(status, 'gemini'),
         'gpt': detect_model_lane(status, 'gpt'),
-        'focus': [
-            '查看当前主会话状态',
-            '跟踪近期子代理痕迹',
-            '用于 Telegram 快速总览'
-        ]
+        'focus': focus
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
