@@ -1,0 +1,18 @@
+{
+  "title": "🛡️ Vanguard 状态面板",
+  "gateway": "✅ Online",
+  "main": "✅ Active",
+  "subagents": "✅ 2 running",
+  "crons": "⚠️ 1 failed / 8 total",
+  "cost_today": 3.42,
+  "context_percent": 61,
+  "lcm": "✅ Enabled",
+  "ollama": "✅ Ready",
+  "gemini": "✅ Ready",
+  "gpt": "✅ Ready",
+  "focus": [
+    "修 dashboard",
+    "跑 skill 安装",
+    "做 Telegram 状态卡"
+  ]
+}
